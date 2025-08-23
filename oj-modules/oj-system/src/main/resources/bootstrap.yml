@@ -1,0 +1,15 @@
+spring:
+  application:
+    #应用名称
+    name: oj-system
+  profiles:
+    active: dev
+  cloud:
+    nacos:
+      discovery:
+        namespace: 7fc8d7ca-2230-497c-8d69-f5f0330b75e7
+        server-addr: http://localhost:8848
+      config:
+        namespace: 7fc8d7ca-2230-497c-8d69-f5f0330b75e7
+        server-addr: http://localhost:8848
+        file-extension: yaml
