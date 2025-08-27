@@ -1,8 +1,11 @@
 package com.example.system.service.sysuser.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.example.commom.core.constans.Constants;
+import com.example.commom.core.constans.HttpConstants;
+import com.example.commom.core.domain.LoginUser;
 import com.example.commom.core.domain.R;
 import com.example.commom.core.domain.vo.LoginUserVO;
 import com.example.commom.core.enums.UserIdentity;
@@ -74,12 +77,24 @@ public class SysUserServiceImpl implements ISysUserService {
 
     @Override
     public boolean logout(String token) {
-        return false;
+        if (StrUtil.isNotEmpty(token) && token.startsWith(HttpConstants.PREFIX)) {
+            token = token.replaceFirst(HttpConstants.PREFIX, StrUtil.EMPTY);
+        }
+        return tokenService.deleteLoginUser(token, secret);
     }
 
     @Override
     public R<LoginUserVO> info(String token) {
-        return null;
+        if (StrUtil.isNotEmpty(token) && token.startsWith(HttpConstants.PREFIX)) {
+            token = token.replaceFirst(HttpConstants.PREFIX, StrUtil.EMPTY);
+        }
+        LoginUser loginUser = tokenService.getLoginUser(token,secret);
+        if (loginUser == null) {
+            return R.fail(ResultCode.FAILED_USER_NOT_EXISTS);
+        }
+        LoginUserVO  loginUserVO = new LoginUserVO();
+        loginUserVO.setNickName(loginUser.getNickName());
+        return R.ok(loginUserVO);
     }
 
     @Override

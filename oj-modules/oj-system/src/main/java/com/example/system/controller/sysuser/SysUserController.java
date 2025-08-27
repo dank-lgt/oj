@@ -1,7 +1,9 @@
 package com.example.system.controller.sysuser;
 
+import com.example.commom.core.constans.HttpConstants;
 import com.example.commom.core.controller.BaseController;
 import com.example.commom.core.domain.R;
+import com.example.commom.core.domain.vo.LoginUserVO;
 import com.example.system.domain.sysuser.dto.LoginDTO;
 import com.example.system.domain.sysuser.dto.SysUserSaveDTO;
 import com.example.system.domain.sysuser.vo.SysUserVO;
@@ -34,6 +36,17 @@ public class SysUserController extends BaseController {
         return sysUserService.login(loginDTO.getUserAccount(), loginDTO.getPassword());
     }
 
+
+    @DeleteMapping("/logout")
+    @Operation(summary = "管理员登出", description = "根据token进行管理员登出")
+    public R<Void> logout(@RequestHeader(HttpConstants.AUTHENTICATION) String token) {
+        return toR(sysUserService.logout(token));
+//        if (logout) {
+//            return R.ok();
+//        }
+//        return R.fail();
+    }
+
     @PostMapping("/add")
     @Operation(summary = "添加管理员", description = "根据数据添加管理员")
     @ApiResponse(responseCode = "1000", description = "成功")
@@ -64,5 +77,11 @@ public class SysUserController extends BaseController {
     public R<SysUserVO> detail(Long userId, @RequestParam(required = false)
     String sex) {
         return null;
+    }
+
+    @GetMapping("/info")
+    @Operation(summary = "获取当前登录用户信息", description = "获取当前登录用户信息")
+    public R<LoginUserVO> info(@RequestHeader(HttpConstants.AUTHENTICATION) String token) {
+        return sysUserService.info(token);
     }
 }
