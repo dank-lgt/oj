@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.example.commom.core.domain.BaseEntity;
+import com.example.system.TimeCheck.inte.NotLaterThan;
 import lombok.Getter;
 import lombok.Setter;
 
