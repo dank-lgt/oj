@@ -4,7 +4,7 @@ public class CacheConstants {
 
     public final static String LOGIN_TOKEN_KEY = "login_token:";
 
-    public final static long EXP = 5;
+    public final static long EXP = 15;
 
     public static final long REFRESH_TIME = 3;
 

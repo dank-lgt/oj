@@ -1,8 +1,11 @@
 package com.example.system.service.question.impl;
 
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.example.commom.core.constans.Constants;
 import com.example.commom.core.enums.ResultCode;
 import com.example.common.security.exception.ServiceException;
 import com.example.system.domain.question.Question;
@@ -20,7 +23,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -44,11 +50,25 @@ public class QuestionServiceImpl implements IQuestionService {
      */
     @Override
     public List<QuestionVO> list(QuestionQueryDTO questionQueryDTO) {
-        // 使用PageHelper进行分页处理，设置当前页码和每页大小
+        String excludeIdStr = questionQueryDTO.getExcludeIdStr();
+        if (StrUtil.isNotEmpty(excludeIdStr)) {
+            String[] excludeIdArr = excludeIdStr.split(Constants.SPLIT_SEM);
+            Set<Long> excludeIdSet = Arrays.stream(excludeIdArr)
+                    .map(String::trim) // 去除空格
+                    .filter(StrUtil::isNotBlank) // 过滤空字符串
+                    .map(Long::valueOf)
+                    .collect(Collectors.toSet());
+            questionQueryDTO.setExcludeIdSet(excludeIdSet);
+        }
         PageHelper.startPage(questionQueryDTO.getPageNum(), questionQueryDTO.getPageSize());
-        // 调用数据访问层方法查询问题列表
         List<QuestionVO> questionVOList = questionMapper.selectQuestionList(questionQueryDTO);
         return questionVOList;
+        //questionVOList == null || questionVOList.isEmpty()
+//        if (CollectionUtil.isEmpty(questionVOList)) {
+//            return TableDataInfo.empty();
+//        }
+//        new PageInfo<>(questionVOList).getTotal(); //获取符合查询条件的数据的总数
+//        return TableDataInfo.success(questionVOList, questionVOList.size());
     }
 
     /**
@@ -62,19 +82,19 @@ public class QuestionServiceImpl implements IQuestionService {
         // 查询数据库中是否已存在相同标题的问题
         List<Question> questionList = questionMapper.selectList(new LambdaQueryWrapper<Question>()
                 .eq(Question::getTitle, questionAddDTO.getTitle()));
-        // 如果问题列表不为空，说明已存在相同标题的问题，抛出异常
         if (CollectionUtil.isNotEmpty(questionList)) {
             throw new ServiceException(ResultCode.FAILED_ALREADY_EXISTS);
         }
-        // 创建新的问题对象，并将DTO的属性复制到问题对象中
         Question question = new Question();
-        BeanUtils.copyProperties(questionAddDTO, question);
-        // 将问题插入数据库
+        BeanUtil.copyProperties(questionAddDTO, question);
         int insert = questionMapper.insert(question);
-        // 判断插入是否成功
         if (insert <= 0) {
             return false;
         }
+//        QuestionES questionES = new QuestionES();
+//        BeanUtil.copyProperties(question, questionES);
+//        questionRepository.save(questionES);
+//        questionCacheManager.addCache(question.getQuestionId());
         return true;
     }
 

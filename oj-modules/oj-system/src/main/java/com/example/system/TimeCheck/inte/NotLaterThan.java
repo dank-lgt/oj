@@ -16,7 +16,7 @@ public @interface NotLaterThan {
     String endTimeField();
 
     // 新增：最小小时差，默认2小时
-    int minHours() default 2;
+    long minHours() default 2;
 
     Class<?>[] groups() default {};
     Class<? extends Payload>[] payload() default {};

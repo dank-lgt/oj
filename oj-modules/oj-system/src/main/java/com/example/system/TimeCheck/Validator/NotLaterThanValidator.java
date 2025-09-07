@@ -3,12 +3,15 @@ package com.example.system.TimeCheck.Validator;
 import com.example.system.TimeCheck.inte.NotLaterThan;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
+import org.springframework.stereotype.Component;
+
 import java.lang.reflect.Field;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
+@Component
 public class NotLaterThanValidator implements ConstraintValidator<NotLaterThan, Object> {
 
     private String startTimeField;
@@ -64,9 +67,8 @@ public class NotLaterThanValidator implements ConstraintValidator<NotLaterThan, 
                 }
 
                 // 计算小时差
-                long diffInHours = ChronoUnit.HOURS.between(startDateTime, endDateTime);
-
-                return diffInHours >= minHoursDifference;
+                long diffInMinutes = ChronoUnit.MINUTES.between(startDateTime, endDateTime);
+                return diffInMinutes >= minHoursDifference * 60;
             }
 
         } catch (NoSuchFieldException | IllegalAccessException e) {

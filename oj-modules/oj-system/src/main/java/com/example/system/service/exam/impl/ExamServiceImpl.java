@@ -4,6 +4,7 @@ package com.example.system.service.exam.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.commom.core.constans.Constants;
 import com.example.commom.core.enums.ResultCode;
@@ -11,11 +12,14 @@ import com.example.common.security.exception.ServiceException;
 import com.example.system.domain.exam.Exam;
 import com.example.system.domain.exam.ExamQuestion;
 import com.example.system.domain.exam.dto.ExamAddDTO;
+import com.example.system.domain.exam.dto.ExamEditDTO;
 import com.example.system.domain.exam.dto.ExamQueryDTO;
 import com.example.system.domain.exam.dto.ExamQuestAddDTO;
 import com.example.system.domain.exam.vo.ExamDetailVO;
 import com.example.system.domain.exam.vo.ExamVO;
 import com.example.system.domain.question.Question;
+import com.example.system.domain.question.vo.QuestionVO;
+import com.example.system.manager.ExamCacheManager;
 import com.example.system.mapper.exam.ExamMapper;
 import com.example.system.mapper.exam.ExamQuestionMapper;
 import com.example.system.mapper.question.QuestionMapper;
@@ -27,6 +31,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -41,8 +46,8 @@ public class ExamServiceImpl extends ServiceImpl<ExamQuestionMapper, ExamQuestio
     @Autowired
     private ExamQuestionMapper examQuestionMapper;
 
-//    @Autowired
-//    private ExamCacheManager examCacheManager;
+    @Autowired
+    private ExamCacheManager examCacheManager;
 
 
     /**
@@ -106,8 +111,8 @@ public class ExamServiceImpl extends ServiceImpl<ExamQuestionMapper, ExamQuestio
     public boolean questionAdd(ExamQuestAddDTO examQuestAddDTO) {
     // 根据竞赛ID获取竞赛对象
         Exam exam = getExam(examQuestAddDTO.getExamId());
-    // 检查竞赛状态（已注释掉的代码）
-//        checkExam(exam);
+    // 检查竞赛状态
+        checkExam(exam);
     // 判断竞赛是否已发布
         if (Constants.TRUE.equals(exam.getStatus())) {
         // 如果竞赛已发布，则抛出异常
@@ -129,16 +134,63 @@ public class ExamServiceImpl extends ServiceImpl<ExamQuestionMapper, ExamQuestio
         return saveExamQuestion(exam, questionIdSet);
     }
 
-    private boolean saveExamQuestion(Exam exam, Set<Long> questionIdSet) {
-        int num = 1;
-        List<ExamQuestion> examQuestionList = new ArrayList<>();
-        for (Long questionId : questionIdSet) {
-            ExamQuestion examQuestion = new ExamQuestion()
-                    .setExamId(exam.getExamId()).setQuestionId(questionId).setQuestionOrder(num++);
-            examQuestionList.add(examQuestion);
-        }
-        return saveBatch(examQuestionList);
+/**
+ * 保存考试题目关联信息
+ * @param exam 考试对象，包含考试ID等信息
+ * @param questionIdSet 题目ID集合，需要关联到该考试的题目
+ * @return boolean 是否批量保存成功
+ */
+private boolean saveExamQuestion(Exam exam, Set<Long> questionIdSet) {
+    Long examId = exam.getExamId();
+
+    // 1. 查询该考试已存在的题目关联记录
+    List<ExamQuestion> existingQuestions = this.list(new QueryWrapper<ExamQuestion>()
+            .eq("exam_id", examId)
+            .orderByAsc("question_order"));
+
+    // 2. 获取已存在的题目ID集合和当前最大题号
+    Set<Long> existingQuestionIds = existingQuestions.stream()
+            .map(ExamQuestion::getQuestionId)
+            .collect(Collectors.toSet());
+
+    int maxOrder = existingQuestions.stream()
+            .mapToInt(ExamQuestion::getQuestionOrder)
+            .max()
+            .orElse(0); // 如果没有现有记录，从0开始
+
+    // 3. 筛选出新题目ID（排除已存在的）
+    Set<Long> newQuestionIds = questionIdSet.stream()
+            .filter(id -> !existingQuestionIds.contains(id))
+            .collect(Collectors.toSet());
+
+    // 如果没有新题目需要添加，直接返回true
+    if (CollectionUtil.isEmpty(newQuestionIds)) {
+        log.info("考试ID: {} 没有需要添加的新题目，所有题目已存在", examId);
+        return true;
     }
+
+    // 4. 创建新题目的关联列表
+    List<ExamQuestion> examQuestionList = new ArrayList<>();
+    int currentOrder = maxOrder + 1; // 从当前最大序号+1开始
+
+    for (Long questionId : newQuestionIds) {
+        ExamQuestion examQuestion = new ExamQuestion()
+                .setExamId(examId)
+                .setQuestionId(questionId)
+                .setQuestionOrder(currentOrder++);
+        examQuestionList.add(examQuestion);
+    }
+
+    // 5. 批量保存新题目的关联信息
+    boolean saveResult = saveBatch(examQuestionList);
+
+    if (saveResult) {
+        log.info("考试ID: {} 成功添加 {} 个新题目，题号从 {} 开始",
+                examId, newQuestionIds.size(), maxOrder + 1);
+    }
+
+    return saveResult;
+}
 
 
     /**
@@ -153,7 +205,7 @@ public class ExamServiceImpl extends ServiceImpl<ExamQuestionMapper, ExamQuestio
         // 根据竞赛ID获取竞赛信息
         Exam exam = getExam(examId);
         // 检查竞赛是否存在
-        checkExam(exam);
+//        checkExam(exam);
         // 检查竞赛是否已发布，如果已发布则抛出异常
         if (Constants.TRUE.equals(exam.getStatus())) {
             throw new ServiceException(ResultCode.EXAM_IS_PUBLISH);
@@ -164,9 +216,58 @@ public class ExamServiceImpl extends ServiceImpl<ExamQuestionMapper, ExamQuestio
                 .eq(ExamQuestion::getQuestionId, questionId));
     }
 
+/**
+ * 获取竞赛详情信息
+ * @param examId 竞赛ID
+ * @return ExamDetailVO 竞赛详情视图对象，包含竞赛基本信息及题目列表
+ */
     @Override
     public ExamDetailVO detail(Long examId) {
-        return null;
+    // 创建竞赛详情视图对象
+        ExamDetailVO examDetailVO = new ExamDetailVO();
+    // 根据竞赛ID获取竞赛实体对象
+        Exam exam = getExam(examId);
+    // 将竞赛实体对象的属性复制到视图对象中
+        BeanUtil.copyProperties(exam, examDetailVO);
+    // 查询竞赛相关的题目列表
+        List<QuestionVO> questionVOList = examQuestionMapper.selectExamQuestionList(examId);
+    // 如果题目列表为空，直接返回竞赛详情对象
+        if (CollectionUtil.isEmpty(questionVOList)) {
+            return examDetailVO;
+        }
+    // 设置竞赛详情对象的题目列表
+        examDetailVO.setExamQuestionList(questionVOList);
+    // 返回完整的竞赛详情信息
+        return examDetailVO;
+    }
+
+/**
+ * 编辑竞赛信息的方法
+ * @param examEditDTO 包含竞赛编辑信息的DTO对象
+ * @return 返回更新的记录数
+ * @throws ServiceException 如果竞赛已发布，则抛出异常
+ */
+    @Override
+    public int edit(ExamEditDTO examEditDTO) {
+    // 根据竞赛ID获取竞赛实体对象
+        Exam exam = getExam(examEditDTO.getExamId());
+    // 检查竞赛状态是否为已发布
+        if (Constants.TRUE.equals(exam.getStatus())) {
+        // 如果竞赛已发布，抛出异常
+            throw new ServiceException(ResultCode.EXAM_IS_PUBLISH);
+        }
+    // 检查竞赛信息是否有效
+        checkExam(exam);
+    // 检查竞赛保存参数是否合法
+        checkExamSaveParams(examEditDTO, examEditDTO.getExamId());
+    // 更新竞赛标题
+        exam.setTitle(examEditDTO.getTitle());
+    // 更新竞赛开始时间
+        exam.setStartTime(examEditDTO.getStartTime());
+    // 更新竞赛结束时间
+        exam.setEndTime(examEditDTO.getEndTime());
+    // 执行更新操作并返回更新的记录数
+        return examMapper.updateById(exam);
     }
 
     @Override
@@ -194,13 +295,55 @@ public class ExamServiceImpl extends ServiceImpl<ExamQuestionMapper, ExamQuestio
     }
 
     @Override
+    /**
+     * 发布竞赛方法
+     * @param examId 竞赛ID
+     * @return 返回更新的记录数
+     */
     public int publish(Long examId) {
-        return 0;
+        // 根据竞赛ID查询竞赛信息
+        Exam exam = getExam(examId);
+        // 检查竞赛是否已结束（通过比较竞赛结束时间和当前时间）
+        //select count(0) from tb_exam_question where exam_id = #{examId}
+        if (exam.getEndTime().isBefore(LocalDateTime.now())) {
+            throw new ServiceException(ResultCode.EXAM_IS_FINISH);
+        }
+        // 查询该竞赛关联的题目数量
+        Long count = examQuestionMapper
+                .selectCount(new LambdaQueryWrapper<ExamQuestion>().eq(ExamQuestion::getExamId, examId));
+        // 如果竞赛没有题目，则抛出异常
+        if (count == null || count <= 0) {
+            throw new ServiceException(ResultCode.EXAM_NOT_HAS_QUESTION);
+        }
+        // 设置竞赛状态为已发布
+        exam.setStatus(Constants.TRUE);
+
+        //要将新发布的竞赛数据存储到redis   e:t:l  e:d:examId
+        examCacheManager.addCache(exam);
+        return examMapper.updateById(exam);
     }
 
+/**
+ * 取消竞赛发布的方法
+ * @param examId 竞赛ID
+ * @return 更新后的记录数，通常为1表示成功
+ */
     @Override
     public int cancelPublish(Long examId) {
-        return 0;
+    // 根据竞赛ID获取竞赛信息
+        Exam exam = getExam(examId);
+    // 检查竞赛是否存在
+        checkExam(exam);
+    // 判断竞赛是否已经结束，如果已结束则抛出异常
+        if (exam.getEndTime().isBefore(LocalDateTime.now())) {
+            throw new ServiceException(ResultCode.EXAM_IS_FINISH);
+        }
+    // 将竞赛状态设置为未发布
+        exam.setStatus(Constants.FALSE);
+    // 删除竞赛缓存
+        examCacheManager.deleteCache(examId);
+    // 更新数据库中的竞赛信息并返回更新记录数
+        return examMapper.updateById(exam);
     }
 
     private void checkExam(Exam exam) {
