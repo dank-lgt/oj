@@ -26,20 +26,20 @@ public class TokenService {
     private RedisService redisService;
 
     public String createToken(Long userId, String secret, Integer identity, String nickName, String headImage) {
+        String userTokenKey = getUserTokenKey(userId);
+        if (redisService.hasKey(userTokenKey)) {
+            String oldUserKey =  redisService.getCacheObject(userTokenKey, String.class);
+            String oldTokenKey = getTokenKey(oldUserKey);
+            redisService.deleteObject(oldTokenKey);
+            log.info("用户ID: {} 的旧Token已失效，userKey: {}", userId, oldUserKey);
+        }
         Map<String, Object> claims = new HashMap<>();
         String userKey = UUID.fastUUID().toString();
         claims.put(JwtConstants.LOGIN_USER_ID, userId);
         claims.put(JwtConstants.LOGIN_USER_KEY, userKey);
         String token = JwtUtils.createToken(claims, secret);
-        //第三方机制中存储敏感的信息
-
-        //身份认证具体还要存储那些信息   redis 表明用户身份字段  identity  1  表示普通用户  2 ： 表示管理员用户  对象
-
         //使用什么样的数据结构  String  key value    String   hash  list  zset  set
         //key 必须保证唯一     便于维护  统一前缀：logintoken:userId   userId是通过雪花算法生成的
-        //自增  管理员  C端用户   1
-        //过期时间我们怎么记录  过期时间应该定多长。     720分钟   2~3小时
-
         String tokenKey = getTokenKey(userKey);
 //            String tokenKey = "logintoken:" + sysUser.getUserId();
         LoginUser loginUser = new LoginUser();
@@ -47,7 +47,7 @@ public class TokenService {
         loginUser.setNickName(nickName);
         loginUser.setHeadImage(headImage);
         redisService.setCacheObject(tokenKey, loginUser, CacheConstants.EXP, TimeUnit.MINUTES);
-
+        redisService.setCacheObject(userTokenKey, userKey, CacheConstants.EXP, TimeUnit.MINUTES);
         return token;
     }
 
@@ -138,5 +138,9 @@ public class TokenService {
 
     private String getTokenKey(String userKey) {
         return CacheConstants.LOGIN_TOKEN_KEY + userKey;
+    }
+    // 新增：获取用户Token映射的Redis key（基于用户ID）
+    private String getUserTokenKey(Long userId) {
+        return CacheConstants.LOGIN_TOKEN_KEY + "user_Id:" + userId;
     }
 }
