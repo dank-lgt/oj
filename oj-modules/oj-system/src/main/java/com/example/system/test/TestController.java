@@ -1,5 +1,6 @@
 package com.example.system.test;
 
+import cn.hutool.core.util.RandomUtil;
 import com.example.commom.core.domain.R;
 import com.example.common.redis.service.RedisService;
 import com.example.system.domain.sysuser.SysUser;

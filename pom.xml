@@ -9,6 +9,7 @@ http://maven.apache.org/xsd/maven-4.0.0.xsd">
         <module>oj-modules</module>
         <module>oj-common</module>
         <module>oj-gateway</module>
+        <module>oj-api</module>
     </modules>
     <parent>
         <groupId>org.springframework.boot</groupId>
@@ -36,6 +37,7 @@ http://maven.apache.org/xsd/maven-4.0.0.xsd">
         <oj-common-redis.version>1.0-SNAPSHOT</oj-common-redis.version>
         <oj-common-mybatis.version>1.0-SNAPSHOT</oj-common-mybatis.version>
         <oj-common-message.version>1.0-SNAPSHOT</oj-common-message.version>
+        <oj-common-message-email.version>3.3.4</oj-common-message-email.version>
         <oj-common-file.version>1.0-SNAPSHOT</oj-common-file.version>
         <oj-common-elsticsearch.version>1.0-SNAPSHOT</oj-common-elsticsearch.version>
         <springdoc-openapi.version>2.2.0</springdoc-openapi.version>

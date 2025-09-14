@@ -1,5 +1,6 @@
 package com.example.system.domain.user.dto;
 
+import cn.hutool.core.util.RandomUtil;
 import lombok.Getter;
 import lombok.Setter;
 

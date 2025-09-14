@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.example.commom.core.domain.R;
 import com.example.commom.core.enums.ResultCode;
+import com.example.common.security.exception.EmailException;
 import com.example.common.security.exception.ServiceException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -77,5 +78,9 @@ public class GlobalExceptionHandler {
         String requestURI = request.getRequestURI();
         log.error("请求地址'{}',发生异常.", requestURI, e);
         return R.fail(ResultCode.ERROR);
+    }
+    @ExceptionHandler(EmailException.class)
+    public R<?> handleEmailException(EmailException e) {
+        return R.fail(ResultCode.FAILED_SEND_CODE);
     }
 }
