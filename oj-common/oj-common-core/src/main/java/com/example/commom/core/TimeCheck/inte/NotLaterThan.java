@@ -1,6 +1,6 @@
-package com.example.system.TimeCheck.inte;
+package com.example.commom.core.TimeCheck.inte;
 
-import com.example.system.TimeCheck.Validator.NotLaterThanValidator;
+import com.example.commom.core.TimeCheck.Validator.NotLaterThanValidator;
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
 import java.lang.annotation.*;

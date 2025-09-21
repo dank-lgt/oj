@@ -21,8 +21,8 @@ public class TestController extends BaseController {
     private EmailService emailService;
 
     @GetMapping("/sendCode")
-    public R<Void> sendCode(String email) {
+    public R<Void> sendCode(String email,String code) {
         log.info("验证码发送测试");
-        return toR(emailService.sendSimpleVerifyCode(email));
+        return toR(emailService.sendHtmlVerifyCode(email, code));
     }
 }

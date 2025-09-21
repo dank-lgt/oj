@@ -18,7 +18,7 @@
 //    @Autowired
 //    private IUserExamService userExamService;
 //
-////    @CheckUserStatus
+////   @CheckUserStatus
 //    @PostMapping("/enter")
 //    public R<Void> enter(@RequestHeader(HttpConstants.AUTHENTICATION) String token, @RequestBody ExamDTO examDTO) {
 //        return toR(userExamService.enter(token, examDTO.getExamId()));

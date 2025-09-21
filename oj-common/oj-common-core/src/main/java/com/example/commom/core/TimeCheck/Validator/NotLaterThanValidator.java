@@ -1,6 +1,6 @@
-package com.example.system.TimeCheck.Validator;
+package com.example.commom.core.TimeCheck.Validator;
 
-import com.example.system.TimeCheck.inte.NotLaterThan;
+import com.example.commom.core.TimeCheck.inte.NotLaterThan;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import org.springframework.stereotype.Component;

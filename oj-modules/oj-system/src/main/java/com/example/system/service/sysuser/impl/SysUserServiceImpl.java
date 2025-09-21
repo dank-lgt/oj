@@ -25,21 +25,42 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+/**
+ * 系统用户服务实现类
+ * 使用@Service注解标记为服务层组件
+ * 使用@RefreshScope注解标记为可刷新作用域
+ * 使用@Slf4j注解提供日志支持
+ */
 @Service
 @RefreshScope
 @Slf4j
 public class SysUserServiceImpl implements ISysUserService {
 
+    /**
+     * 自动注入系统用户数据访问层
+     */
     @Autowired
     private SysUserMapper sysUserMapper;
 
+    /**
+     * 自动注入令牌服务
+     */
     @Autowired
     private TokenService tokenService;
 
+    /**
+     * 从配置文件中注入JWT密钥
+     */
     @Value("${jwt.secret}")
     private String secret;
 
 
+    /**
+     * 用户登录方法
+     * @param userAccount 用户账号
+     * @param password 密码
+     * @return 返回操作结果，包含token信息
+     */
     @Override
     public R<String> login(String userAccount, String password) {
 //        try {

@@ -5,17 +5,20 @@ import com.example.commom.core.enums.ResultCode;
 import com.example.common.message.config.EmailConfig;
 import com.example.common.redis.service.RedisService;
 import com.example.common.security.exception.EmailException;
+import org.dromara.email.jakarta.api.MailClient;
 import org.dromara.email.jakarta.comm.entity.MailMessage;
 import org.dromara.email.jakarta.core.factory.MailFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-@Service
+@Component
 public class EmailService {
+    private  MailClient mailClient;
 
     @Autowired
     private EmailConfig emailConfig;
@@ -23,25 +26,25 @@ public class EmailService {
     @Autowired
     private RedisService redisService;
 
+    // 邮件模板配置
+//    @Value("${email.template.verify-code:verify-code.html}")
+//    private String verifyCodeTemplate;
+
     /**
      * 发送简单文本验证码邮件
      */
     public boolean sendSimpleVerifyCode(String toEmail) {
+        String verifyCode = RandomUtil.randomNumbers(emailConfig.getCodeLength());
+        MailMessage message = MailMessage.Builder()
+                .mailAddress(toEmail)
+                .title("您的验证码")
+                .body(String.format("您的验证码是: %s，该验证码%d分钟内有效。",
+                        verifyCode, emailConfig.getExpireMinutes()))
+                .build();
         try {
-            String verifyCode = RandomUtil.randomNumbers(emailConfig.getCodeLength());
-
-            MailMessage message = MailMessage.Builder()
-                    .mailAddress(toEmail)
-                    .title("您的验证码")
-                    .body(String.format("您的验证码是: %s，该验证码%d分钟内有效。",
-                            verifyCode, emailConfig.getExpireMinutes()))
-                    .build();
-
-            MailFactory.createMailClient("default").send(message);
-
-            // 保存验证码到缓存（实际实现）
-            saveVerifyCode(toEmail, verifyCode);
-
+            mailClient = MailFactory.createMailClient("default");
+            mailClient.send(message);
+//            saveVerifyCode(toEmail, verifyCode);
             return true;
         } catch (Exception e) {
             throw new EmailException(ResultCode.FAILED_SEND_CODE);
@@ -51,29 +54,27 @@ public class EmailService {
     /**
      * 发送HTML验证码邮件（使用模板文件）
      */
-    public boolean sendHtmlVerifyCode(String toEmail) {
+    public boolean sendHtmlVerifyCode(String toEmail,String verifyCode) {
+//        String verifyCode = RandomUtil.randomNumbers(emailConfig.getCodeLength());
+        // 准备模板参数
+        Map<String, String> params = new HashMap<>();
+        params.put("verifyCode", verifyCode);
+        params.put("expireMinutes", String.valueOf(emailConfig.getExpireMinutes()));
+
+        MailMessage message = MailMessage.Builder()
+                .mailAddress(toEmail)
+                .title("您的验证码")
+                .html("verify-code.html")
+                .htmlValues(params)
+                .build();
+
         try {
-            String verifyCode = RandomUtil.randomNumbers(emailConfig.getCodeLength());
-
-            // 准备模板参数
-            Map<String, String> params = new HashMap<>();
-            params.put("verifyCode", verifyCode);
-            params.put("expireMinutes", String.valueOf(emailConfig.getExpireMinutes()));
-
-            MailMessage message = MailMessage.Builder()
-                    .mailAddress(toEmail)
-                    .title("您的验证码")
-                    .html("verify-code.html") // 模板文件位于resources/template目录
-                    .htmlValues(params)
-                    .build();
-
-            //
-            MailFactory.createMailClient("default").send(message);
-
-            saveVerifyCode(toEmail, verifyCode);
+            mailClient = MailFactory.createMailClient("default");
+            mailClient.send(message);
+//            saveVerifyCode(toEmail, verifyCode);
             return true;
         } catch (Exception e) {
-           throw new EmailException(ResultCode.FAILED_SEND_CODE);
+            throw new EmailException(ResultCode.FAILED_SEND_CODE);
         }
     }
 
@@ -81,19 +82,19 @@ public class EmailService {
      * 发送带附件的邮件
      */
     public boolean sendEmailWithAttachment(String toEmail, Map<String, String> attachments) {
+        String verifyCode = RandomUtil.randomNumbers(emailConfig.getCodeLength());
+
+        MailMessage message = MailMessage.Builder()
+                .mailAddress(toEmail)
+                .title("您的验证码和附件")
+                .body(String.format("您的验证码是: %s", verifyCode))
+                .files(attachments)
+                .build();
+
         try {
-            String verifyCode = RandomUtil.randomNumbers(emailConfig.getCodeLength());
-
-            MailMessage message = MailMessage.Builder()
-                    .mailAddress(toEmail)
-                    .title("您的验证码和附件")
-                    .body(String.format("您的验证码是: %s", verifyCode))
-                    .files(attachments)
-                    .build();
-
-            MailFactory.createMailClient("default").send(message);
-
-            saveVerifyCode(toEmail, verifyCode);
+            mailClient = MailFactory.createMailClient("default");
+            mailClient.send(message);
+//            saveVerifyCode(toEmail, verifyCode);
             return true;
         } catch (Exception e) {
             throw new EmailException(ResultCode.FAILED_SEND_CODE);
@@ -104,20 +105,20 @@ public class EmailService {
      * 发送压缩附件邮件
      */
     public boolean sendCompressedEmail(String toEmail, Map<String, String> attachments, String zipName) {
+        String verifyCode = RandomUtil.randomNumbers(emailConfig.getCodeLength());
+
+        MailMessage message = MailMessage.Builder()
+                .mailAddress(toEmail)
+                .title("您的验证码和压缩附件")
+                .body(String.format("您的验证码是: %s", verifyCode))
+                .files(attachments)
+                .zipName(zipName)
+                .build();
+
         try {
-            String verifyCode = RandomUtil.randomNumbers(emailConfig.getCodeLength());
-
-            MailMessage message = MailMessage.Builder()
-                    .mailAddress(toEmail)
-                    .title("您的验证码和压缩附件")
-                    .body(String.format("您的验证码是: %s", verifyCode))
-                    .files(attachments)
-                    .zipName(zipName)
-                    .build();
-
-            MailFactory.createMailClient("default").send(message);
-
-            saveVerifyCode(toEmail, verifyCode);
+            mailClient = MailFactory.createMailClient("default");
+            mailClient.send(message);
+//            saveVerifyCode(toEmail, verifyCode);
             return true;
         } catch (Exception e) {
             throw new EmailException(ResultCode.FAILED_SEND_CODE);
@@ -127,28 +128,23 @@ public class EmailService {
     /**
      * 发送给多个收件人（包括抄送和密送）
      */
-    public boolean sendToMultipleRecipients(
-            java.util.List<String> toEmails,
-            java.util.List<String> ccEmails,
-            java.util.List<String> bccEmails) {
+    public boolean sendToMultipleRecipients(List<String> toEmails, List<String> ccEmails, List<String> bccEmails) {
+        String verifyCode = RandomUtil.randomNumbers(emailConfig.getCodeLength());
+
+        MailMessage message = MailMessage.Builder()
+                .mailAddress(toEmails)
+                .title("您的验证码")
+                .body(String.format("您的验证码是: %s", verifyCode))
+                .cc(ccEmails)
+                .bcc(bccEmails)
+                .build();
 
         try {
-            String verifyCode = RandomUtil.randomNumbers(emailConfig.getCodeLength());
-
-            MailMessage message = MailMessage.Builder()
-                    .mailAddress(toEmails)
-                    .title("您的验证码")
-                    .body(String.format("您的验证码是: %s", verifyCode))
-                    .cc(ccEmails)
-                    .bcc(bccEmails)
-                    .build();
-
-            MailFactory.createMailClient("default").send(message);
-
+            mailClient = MailFactory.createMailClient("default");
+            mailClient.send(message);
             // 为每个收件人保存验证码
-            for (String email : toEmails) {
-                saveVerifyCode(email, verifyCode);
-            }
+//            for (String email : toEmails) {
+//                saveVerifyCode(email, verifyCode);
 
             return true;
         } catch (Exception e) {
@@ -160,21 +156,33 @@ public class EmailService {
      * 保存验证码到缓存
      */
     private void saveVerifyCode(String email, String code) {
-        // 实际实现应该使用Redis等缓存工具
-        redisService.setCacheObject(email,code);
-        redisService.expire("verify_code:" + code,
-                emailConfig.getExpireMinutes(), TimeUnit.MINUTES);
-        System.out.println("保存验证码: " + email + " -> " + code);
+        String cacheKey = "verify_code:" + email;
+        redisService.setCacheObject(cacheKey, code);
+        redisService.expire(cacheKey, emailConfig.getExpireMinutes(), TimeUnit.MINUTES);
     }
 
     /**
      * 验证验证码
      */
     public boolean verifyCode(String email, String inputCode) {
-        // 从缓存获取验证码（实际实现）
-        // String savedCode = redisTemplate.opsForValue().get("verify_code:" + email);
-//        String savedCode = "123456"; // 示例代码
-        String savedCode = redisService.getCacheObject(email, String.class);
+        String cacheKey = "verify_code:" + email;
+        String savedCode = redisService.getCacheObject(cacheKey, String.class);
         return savedCode != null && savedCode.equals(inputCode);
+    }
+
+    public long getExpireMinutes() {
+        return emailConfig.getExpireMinutes();
+    }
+
+    public int getCodeLength() {
+        return emailConfig.getCodeLength();
+    }
+
+    public Boolean getIsSend() {
+        return emailConfig.getIsSend();
+    }
+
+    public Integer getSendLimit() {
+        return emailConfig.getSendLimit();
     }
 }

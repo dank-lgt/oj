@@ -1,8 +1,7 @@
 package com.example.system.domain.exam.dto;
 
-import com.example.system.TimeCheck.inte.NotLaterThan;
+import com.example.commom.core.TimeCheck.inte.NotLaterThan;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
