@@ -54,7 +54,7 @@ varchar 动态开辟空间  varchar(10)
 -- 时间限制 ：毫秒    空间限制：字节
 delete
 from tb_question
-where question_id =
+where question_id = 1;
 create table tb_question
 (
     question_id   bigint unsigned not null comment '题目id',
@@ -75,7 +75,7 @@ create table tb_question
 
 
 
---竞赛管理
+-- 竞赛管理
 -- B端：列表、新增、编辑、删除、发布、撤销发布
 --
 -- C端：列表（未开始、历史） 、报名参赛、我的比赛、参加竞赛（竞赛倒计时、竞赛内题目切换、完成竞赛） 、竞赛练习、查看排名、我的消息
@@ -88,7 +88,7 @@ create table tb_exam
     start_time  datetime    not null comment '竞赛开始时间',
     end_time    datetime    not null comment '竞赛结束时间',
     status      tinyint     not null default '0' comment '是否发布 0：未发布  1：已发布',
---exam_question   这个竞赛下所有的题目都存进来并且用&分隔开   10
+-- exam_question   这个竞赛下所有的题目都存进来并且用&分隔开   10
     create_by   bigint unsigned not null comment '创建人',
     create_time datetime    not null comment '创建时间',
     update_by   bigint unsigned comment '更新人',
@@ -202,7 +202,7 @@ create table tb_user_submit
     update_by    bigint unsigned comment '更新人',
     update_time  datetime comment '更新时间',
     primary key (`submit_id`)
-)
+);
 
 
 
@@ -234,8 +234,8 @@ create table tb_message_text
     update_by       bigint unsigned comment '更新人',
     update_time     datetime comment '更新时间',
     primary key (text_id)
-)
---消息表
+);
+-- 消息表
 create table tb_message
 (
     message_id  bigint unsigned NOT NULL COMMENT '消息id（主键）',
