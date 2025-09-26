@@ -1,4 +1,4 @@
-FROM openjdk:17.0.2
+FROM openjdk:17.0.8
 
 ADD ./oj-judge.jar ./oj-judge.jar
 
