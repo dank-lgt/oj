@@ -102,12 +102,21 @@ public class UserExamService implements IUserExamService {
 
     //先查询缓存（u:e:l:用户id）  如果缓存能够查询到
     //如果查询不到   数据库当中再去查询  并且将数据库中的数据同步给redis
+    /**
+     * 查询用户的考试列表，优先从缓存中获取，缓存不存在则从数据库查询并同步到缓存
+     * @param examQueryDTO 考试查询条件对象，包含分页信息和查询类型
+     * @return TableDataInfo 包含考试列表和总数的表格数据对象
+     */
     @Override
     public TableDataInfo list(ExamQueryDTO examQueryDTO) {
+        // 获取当前登录用户ID
         Long userId = ThreadLocalUtil.get(Constants.USER_ID, Long.class);
+        // 设置查询类型为用户考试列表
         examQueryDTO.setType(ExamListType.USER_EXAM_LIST.getValue());
+        // 从缓存中获取考试列表总数
         Long total = examCacheManager.getListSize(ExamListType.USER_EXAM_LIST.getValue(), userId);
         List<ExamVO> examVOList;
+        // 缓存中没有数据时从数据库查询并刷新缓存
         if (total == null || total <= 0) {
             //从数据库中查询我的竞赛列表
             PageHelper.startPage(examQueryDTO.getPageNum(), examQueryDTO.getPageSize());
@@ -115,12 +124,15 @@ public class UserExamService implements IUserExamService {
             examCacheManager.refreshCache(ExamListType.USER_EXAM_LIST.getValue(), userId);
             total = new PageInfo<>(examVOList).getTotal();
         } else {
+            // 从缓存中获取考试列表数据
             examVOList = examCacheManager.getExamVOList(examQueryDTO, userId);
             total = examCacheManager.getListSize(examQueryDTO.getType(), userId);
         }
+        // 如果查询结果为空，返回空数据对象
         if (CollectionUtil.isEmpty(examVOList)) {
             return TableDataInfo.empty();
         }
+        // 返回成功响应，包含考试列表和总数
         return TableDataInfo.success(examVOList, total);
     }
 }

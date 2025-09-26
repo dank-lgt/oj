@@ -11,6 +11,12 @@ target/
 *.iws
 *.iml
 *.ipr
+/deploy/dev/elasticSearch/
+/logs/
+/.idea/
+/user-code/
+/user-code-pool/
+/deploy/test/nginx/dist/
 
 ### Eclipse ###
 .apt_generated
@@ -36,5 +42,3 @@ build/
 
 ### Mac OS ###
 .DS_Store
-/logs/
-/.idea/
