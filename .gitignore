@@ -11,7 +11,8 @@ target/
 *.iws
 *.iml
 *.ipr
-/deploy/dev/elasticSearch/
+/deploy/dev/elasticSearch/data/*
+/deploy/dev/elasticSearch/plugins/*
 /logs/
 /.idea/
 /user-code/

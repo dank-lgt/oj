@@ -10,7 +10,7 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 
 @SpringBootApplication
 @MapperScan("com.example.**.mapper")
-//@EnableFeignClients(basePackages = "com.example.api")
+@EnableFeignClients(basePackages = "com.example.api")
 public class OjFriendApplication {
 
     public static void main(String[] args) {

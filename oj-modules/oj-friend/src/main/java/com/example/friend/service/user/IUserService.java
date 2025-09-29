@@ -15,9 +15,9 @@ public interface IUserService {
 
     R<LoginUserVO> info(String token);
 //
-//    UserVO detail();
-//
-//    int edit(UserUpdateDTO userUpdateDTO);
+    UserVO detail();
+
+    int edit(UserUpdateDTO userUpdateDTO);
 //
 //    int updateHeadImage(String headImage);
 }

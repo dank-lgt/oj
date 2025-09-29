@@ -39,7 +39,7 @@ http://maven.apache.org/xsd/maven-4.0.0.xsd">
         <oj-common-message.version>1.0-SNAPSHOT</oj-common-message.version>
         <oj-common-message-email.version>3.3.4</oj-common-message-email.version>
         <oj-common-file.version>1.0-SNAPSHOT</oj-common-file.version>
-        <oj-common-elsticsearch.version>1.0-SNAPSHOT</oj-common-elsticsearch.version>
+        <oj-common-elasticsearch.version>1.0-SNAPSHOT</oj-common-elasticsearch.version>
         <springdoc-openapi.version>2.2.0</springdoc-openapi.version>
         <pagehelper.boot.version>2.0.0</pagehelper.boot.version>
         <xxl-job.version>3.2.0</xxl-job.version>

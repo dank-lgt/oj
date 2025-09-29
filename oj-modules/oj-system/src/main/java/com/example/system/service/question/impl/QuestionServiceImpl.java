@@ -12,8 +12,11 @@ import com.example.system.domain.question.Question;
 import com.example.system.domain.question.dto.QuestionAddDTO;
 import com.example.system.domain.question.dto.QuestionEditDTO;
 import com.example.system.domain.question.dto.QuestionQueryDTO;
+import com.example.system.domain.question.es.QuestionES;
 import com.example.system.domain.question.vo.QuestionDetailVO;
 import com.example.system.domain.question.vo.QuestionVO;
+import com.example.system.elasticsearch.QuestionRepository;
+import com.example.system.manager.QuestionCacheManager;
 import com.example.system.mapper.question.QuestionMapper;
 import com.example.system.service.question.IQuestionService;
 import com.github.pagehelper.PageHelper;
@@ -36,11 +39,11 @@ public class QuestionServiceImpl implements IQuestionService {
     @Autowired
     private QuestionMapper questionMapper;
 
-//    @Autowired
-//    private QuestionRepository questionRepository;
+    @Autowired
+    private QuestionRepository questionRepository;
 //
-//    @Autowired
-//    private QuestionCacheManager questionCacheManager;
+    @Autowired
+    private QuestionCacheManager questionCacheManager;
 
     /**
      * 查询问题列表
@@ -91,10 +94,10 @@ public class QuestionServiceImpl implements IQuestionService {
         if (insert <= 0) {
             return false;
         }
-//        QuestionES questionES = new QuestionES();
-//        BeanUtil.copyProperties(question, questionES);
-//        questionRepository.save(questionES);
-//        questionCacheManager.addCache(question.getQuestionId());
+        QuestionES questionES = new QuestionES();
+        BeanUtil.copyProperties(question, questionES);
+        questionRepository.save(questionES);
+        questionCacheManager.addCache(question.getQuestionId());
         return true;
     }
 
@@ -152,7 +155,9 @@ public class QuestionServiceImpl implements IQuestionService {
         oldQuestion.setDefaultCode(questionEditDTO.getDefaultCode());
         // 更新问题的主函数
         oldQuestion.setMainFuc(questionEditDTO.getMainFuc());
-        // 执行更新操作并返回更新的记录数
+        QuestionES questionES = new QuestionES();
+        BeanUtil.copyProperties(oldQuestion, questionES);
+        questionRepository.save(questionES);
         return questionMapper.updateById(oldQuestion);
     }
 
@@ -165,13 +170,12 @@ public class QuestionServiceImpl implements IQuestionService {
      * @throws ServiceException 当问题不存在时抛出异常
      */
     public int delete(Long questionId) {
-        // First, check if the question exists
         Question question = questionMapper.selectById(questionId);
         if (question == null) {
-            // Throw exception if question doesn't exist
             throw new ServiceException(ResultCode.FAILED_NOT_EXISTS);
         }
-        // If exists, delete the question and return affected rows
+        questionRepository.deleteById(questionId);
+        questionCacheManager.deleteCache(questionId);
         return questionMapper.deleteById(questionId);
     }
 }

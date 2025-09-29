@@ -21,6 +21,7 @@ import com.example.friend.domain.user.User;
 import com.example.friend.domain.user.dto.UserDTO;
 import com.example.friend.domain.user.dto.UserUpdateDTO;
 import com.example.friend.domain.user.vo.UserVO;
+import com.example.friend.manager.UserCacheManager;
 import com.example.friend.mapper.user.UserMapper;
 import com.example.friend.service.user.IUserService;
 import lombok.extern.slf4j.Slf4j;
@@ -50,8 +51,8 @@ public class UserServiceImpl implements IUserService {
     @Autowired
     private RedisService redisService;
 
-//    @Autowired
-//    private UserCacheManager userCacheManager;
+    @Autowired
+    private UserCacheManager userCacheManager;
 
 //
 //    @Value("${app.send-limit:3}")
@@ -166,48 +167,48 @@ public class UserServiceImpl implements IUserService {
 //        }
         return R.ok(loginUserVO);
     }
-//
-//    @Override
-//    public UserVO detail() {
-//        Long userId = ThreadLocalUtil.get(Constants.USER_ID, Long.class);
-//        if (userId == null) {
-//            throw new ServiceException(ResultCode.FAILED_USER_NOT_EXISTS);
-//        }
-//        UserVO userVO = userCacheManager.getUserById(userId);
-//        if (userVO == null) {
-//            throw new ServiceException(ResultCode.FAILED_USER_NOT_EXISTS);
-//        }
+
+    @Override
+    public UserVO detail() {
+        Long userId = ThreadLocalUtil.get(Constants.USER_ID, Long.class);
+        if (userId == null) {
+            throw new ServiceException(ResultCode.FAILED_USER_NOT_EXISTS);
+        }
+        UserVO userVO = userCacheManager.getUserById(userId);
+        if (userVO == null) {
+            throw new ServiceException(ResultCode.FAILED_USER_NOT_EXISTS);
+        }
 //        if (StrUtil.isNotEmpty(userVO.getHeadImage())) {
 //            userVO.setHeadImage(downloadUrl + userVO.getHeadImage());
 //        }
-//        return userVO;
-//    }
-//
-//
-//    @Override
-//    public int edit(UserUpdateDTO userUpdateDTO) {
-//        Long userId = ThreadLocalUtil.get(Constants.USER_ID, Long.class);
-//        if (userId == null) {
-//            throw new ServiceException(ResultCode.FAILED_USER_NOT_EXISTS);
-//        }
-//        User user = userMapper.selectById(userId);
-//        if (user == null) {
-//            throw new ServiceException(ResultCode.FAILED_USER_NOT_EXISTS);
-//        }
-//        user.setNickName(userUpdateDTO.getNickName());
-//        user.setSex(userUpdateDTO.getSex());
-//        user.setSchoolName(userUpdateDTO.getSchoolName());
-//        user.setMajorName(userUpdateDTO.getMajorName());
-//        user.setPhone(userUpdateDTO.getPhone());
-//        user.setEmail(userUpdateDTO.getEmail());
-//        user.setWechat(userUpdateDTO.getWechat());
-//        user.setIntroduce(userUpdateDTO.getIntroduce());
-//        //更新用户缓存
-//        userCacheManager.refreshUser(user);
-//        tokenService.refreshLoginUser(user.getNickName(), user.getHeadImage(),
-//                ThreadLocalUtil.get(Constants.USER_KEY, String.class));
-//        return userMapper.updateById(user);
-//    }
+        return userVO;
+    }
+
+
+    @Override
+    public int edit(UserUpdateDTO userUpdateDTO) {
+        Long userId = ThreadLocalUtil.get(Constants.USER_ID, Long.class);
+        if (userId == null) {
+            throw new ServiceException(ResultCode.FAILED_USER_NOT_EXISTS);
+        }
+        User user = userMapper.selectById(userId);
+        if (user == null) {
+            throw new ServiceException(ResultCode.FAILED_USER_NOT_EXISTS);
+        }
+        user.setNickName(userUpdateDTO.getNickName());
+        user.setSex(userUpdateDTO.getSex());
+        user.setSchoolName(userUpdateDTO.getSchoolName());
+        user.setMajorName(userUpdateDTO.getMajorName());
+        user.setPhone(userUpdateDTO.getPhone());
+        user.setEmail(userUpdateDTO.getEmail());
+        user.setWechat(userUpdateDTO.getWechat());
+        user.setIntroduce(userUpdateDTO.getIntroduce());
+        //更新用户缓存
+        userCacheManager.refreshUser(user);
+        tokenService.refreshLoginUser(user.getNickName(), user.getHeadImage(),
+                ThreadLocalUtil.get(Constants.USER_KEY, String.class));
+        return userMapper.updateById(user);
+    }
 
 //    @Override
 //    public int updateHeadImage(String headImage) {
