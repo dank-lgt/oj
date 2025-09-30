@@ -67,7 +67,15 @@ public enum ResultCode {
 
     FAILED_NOT_SUPPORT_PROGRAM          (3601, "当前不支持此语言"),
 
-    FAILED_RABBIT_PRODUCE               (3701, "mq生产消息异常");
+    FAILED_RABBIT_PRODUCE               (3701, "mq生产消息异常"),
+    FAILED_FILE_UPLOAD_EMPTY            (50001, "上传文件不能为空"),
+    FAILED_FILE_READ                    (50002, "文件读取失败"),
+    FAILED_FILE_TYPE_NOT_ALLOWED        (50003, "文件类型不允许"),
+    FAILED_FILE_SIZE_EXCEEDED           (50004, "文件大小超出限制"),
+    FAILED_FILE_CHECK                   (1007, "文件检查失败"),
+    FAILED_FILE_ACCESS                  (1006, "文件访问链接生成失败");
+
+
 
     private int code;
 

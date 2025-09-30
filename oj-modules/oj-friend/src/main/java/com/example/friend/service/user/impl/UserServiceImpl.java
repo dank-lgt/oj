@@ -210,23 +210,23 @@ public class UserServiceImpl implements IUserService {
         return userMapper.updateById(user);
     }
 
-//    @Override
-//    public int updateHeadImage(String headImage) {
-//        Long userId = ThreadLocalUtil.get(Constants.USER_ID, Long.class);
-//        if (userId == null) {
-//            throw new ServiceException(ResultCode.FAILED_USER_NOT_EXISTS);
-//        }
-//        User user = userMapper.selectById(userId);
-//        if (user == null) {
-//            throw new ServiceException(ResultCode.FAILED_USER_NOT_EXISTS);
-//        }
-//        user.setHeadImage(headImage);
-//        //更新用户缓存
-//        userCacheManager.refreshUser(user);
-//        tokenService.refreshLoginUser(user.getNickName(), user.getHeadImage(),
-//                ThreadLocalUtil.get(Constants.USER_KEY, String.class));
-//        return userMapper.updateById(user);
-//    }
+    @Override
+    public int updateHeadImage(String headImage) {
+        Long userId = ThreadLocalUtil.get(Constants.USER_ID, Long.class);
+        if (userId == null) {
+            throw new ServiceException(ResultCode.FAILED_USER_NOT_EXISTS);
+        }
+        User user = userMapper.selectById(userId);
+        if (user == null) {
+            throw new ServiceException(ResultCode.FAILED_USER_NOT_EXISTS);
+        }
+        user.setHeadImage(headImage);
+        //更新用户缓存
+        userCacheManager.refreshUser(user);
+        tokenService.refreshLoginUser(user.getNickName(), user.getHeadImage(),
+                ThreadLocalUtil.get(Constants.USER_KEY, String.class));
+        return userMapper.updateById(user);
+    }
 
     private void checkCode(String email, String code) {
         String emailCodeKey = getEmailCodeKey(email);
