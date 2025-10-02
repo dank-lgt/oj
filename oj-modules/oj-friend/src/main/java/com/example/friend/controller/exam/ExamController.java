@@ -48,7 +48,6 @@ public class ExamController extends BaseController {
     public R<String> preQuestion(Long examId, Long questionId) {
         return R.ok(examService.preQuestion(examId, questionId));
     }
-
     @GetMapping("/nextQuestion")
     public R<String> nextQuestion(Long examId, Long questionId) {
         return R.ok(examService.nextQuestion(examId, questionId));
