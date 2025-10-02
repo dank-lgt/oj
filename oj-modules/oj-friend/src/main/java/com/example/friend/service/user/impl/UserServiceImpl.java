@@ -60,9 +60,9 @@ public class UserServiceImpl implements IUserService {
 
     @Value("${jwt.secret}")
     private String secret;
-//
-//    @Value("${file.oss.downloadUrl}")
-//    private String downloadUrl;
+
+    @Value("${file.oss.downloadUrl}")
+    private String downloadUrl;
 
 /**
  * 发送验证码的方法
@@ -162,9 +162,9 @@ public class UserServiceImpl implements IUserService {
         }
         LoginUserVO loginUserVO = new LoginUserVO();
         loginUserVO.setNickName(loginUser.getNickName());
-//        if (StrUtil.isNotEmpty(loginUser.getHeadImage())) {
-//            loginUserVO.setHeadImage(downloadUrl + loginUser.getHeadImage());
-//        }
+        if (StrUtil.isNotEmpty(loginUser.getHeadImage())) {
+            loginUserVO.setHeadImage(downloadUrl + loginUser.getHeadImage());
+        }
         return R.ok(loginUserVO);
     }
 
@@ -178,23 +178,18 @@ public class UserServiceImpl implements IUserService {
         if (userVO == null) {
             throw new ServiceException(ResultCode.FAILED_USER_NOT_EXISTS);
         }
-//        if (StrUtil.isNotEmpty(userVO.getHeadImage())) {
-//            userVO.setHeadImage(downloadUrl + userVO.getHeadImage());
-//        }
+        if (StrUtil.isNotEmpty(userVO.getHeadImage())) {
+            userVO.setHeadImage(downloadUrl + userVO.getHeadImage());
+        }
         return userVO;
     }
 
 
     @Override
     public int edit(UserUpdateDTO userUpdateDTO) {
-        Long userId = ThreadLocalUtil.get(Constants.USER_ID, Long.class);
-        if (userId == null) {
-            throw new ServiceException(ResultCode.FAILED_USER_NOT_EXISTS);
-        }
-        User user = userMapper.selectById(userId);
-        if (user == null) {
-            throw new ServiceException(ResultCode.FAILED_USER_NOT_EXISTS);
-        }
+        // 验证用户输入
+        validateUserUpdateDTO(userUpdateDTO);
+        User user = getAndValidateUser();
         user.setNickName(userUpdateDTO.getNickName());
         user.setSex(userUpdateDTO.getSex());
         user.setSchoolName(userUpdateDTO.getSchoolName());
@@ -216,10 +211,7 @@ public class UserServiceImpl implements IUserService {
         if (userId == null) {
             throw new ServiceException(ResultCode.FAILED_USER_NOT_EXISTS);
         }
-        User user = userMapper.selectById(userId);
-        if (user == null) {
-            throw new ServiceException(ResultCode.FAILED_USER_NOT_EXISTS);
-        }
+        User user = getAndValidateUser();
         user.setHeadImage(headImage);
         //更新用户缓存
         userCacheManager.refreshUser(user);
@@ -227,7 +219,36 @@ public class UserServiceImpl implements IUserService {
                 ThreadLocalUtil.get(Constants.USER_KEY, String.class));
         return userMapper.updateById(user);
     }
+    
+    /**
+     * 获取并验证当前用户
+     * @return User 用户对象
+     */
+    private User getAndValidateUser() {
+        Long userId = ThreadLocalUtil.get(Constants.USER_ID, Long.class);
+        if (userId == null) {
+            throw new ServiceException(ResultCode.FAILED_USER_NOT_EXISTS);
+        }
+        User user = userMapper.selectById(userId);
+        if (user == null) {
+            throw new ServiceException(ResultCode.FAILED_USER_NOT_EXISTS);
+        }
+        return user;
+    }
+    
+    /**
+     * 验证用户更新数据
+     * @param userUpdateDTO 用户更新数据传输对象
+     */
+    private void validateUserUpdateDTO(UserUpdateDTO userUpdateDTO) {
+        if (userUpdateDTO == null) {
+            throw new ServiceException(ResultCode.FAILED_PARAMS_VALIDATE);
+        }// 可以添加更多具体的验证逻辑
+        if (StrUtil.isEmpty(userUpdateDTO.getNickName()))
+            throw new ServiceException(ResultCode.FAILED_PARAMS_VALIDATE);
 
+    }
+    
     private void checkCode(String email, String code) {
         String emailCodeKey = getEmailCodeKey(email);
         String cacheCode = redisService.getCacheObject(emailCodeKey, String.class);

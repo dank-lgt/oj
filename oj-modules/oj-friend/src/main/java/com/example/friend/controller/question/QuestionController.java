@@ -38,21 +38,21 @@ public class QuestionController extends BaseController {
 //        return R.ok(questionService.hotList());
 //    }
 //
-//    @GetMapping("/detail")
-//    public R<QuestionDetailVO> detail(Long questionId) {
-//        return R.ok(questionService.detail(questionId));
-//    }
-//
-//    //题目的顺序列表 : 先从redis  redis中没有数据查询数据库
-//    // 当前题目是哪个（questionId）
-//    //redis  list  数据类型  key: q:l value : questionId
-//    @GetMapping("/preQuestion")
-//    public R<String> preQuestion(Long questionId) {
-//        return R.ok(questionService.preQuestion(questionId));
-//    }
-//
-//    @GetMapping("/nextQuestion")
-//    public R<String> nextQuestion(Long questionId) {
-//        return R.ok(questionService.nextQuestion(questionId));
-//    }
+    @GetMapping("/detail")
+    public R<QuestionDetailVO> detail(Long questionId) {
+        return R.ok(questionService.detail(questionId));
+    }
+
+    //题目的顺序列表 : 先从redis  redis中没有数据查询数据库
+    // 当前题目是哪个（questionId）
+    //redis  list  数据类型  key: q:l value : questionId
+    @GetMapping("/preQuestion")
+    public R<String> preQuestion(Long questionId) {
+        return R.ok(questionService.preQuestion(questionId));
+    }
+
+    @GetMapping("/nextQuestion")
+    public R<String> nextQuestion(Long questionId) {
+        return R.ok(questionService.nextQuestion(questionId));
+    }
 }

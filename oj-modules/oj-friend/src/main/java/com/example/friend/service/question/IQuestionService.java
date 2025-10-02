@@ -17,7 +17,7 @@ public interface IQuestionService {
 
     QuestionDetailVO detail(Long questionId);
 
-//    String preQuestion(Long questionId);
+    String preQuestion(Long questionId);
 
-//    String nextQuestion(Long questionId);
+    String nextQuestion(Long questionId);
 }

@@ -7,7 +7,7 @@ import lombok.Setter;
 @Setter
 public class OSSResult {
 
-    private String name;
+    private String filename;
 
     /**
      * 对象状态：true成功，false失败

@@ -11,6 +11,7 @@ import com.example.friend.domain.question.dto.QuestionQueryDTO;
 import com.example.friend.domain.question.vo.QuestionDetailVO;
 import com.example.friend.domain.question.vo.QuestionVO;
 import com.example.friend.elasticsearch.QuestionRepository;
+import com.example.friend.manager.QuestionCacheManager;
 import com.example.friend.mapper.question.QuestionMapper;
 import com.example.friend.service.question.IQuestionService;
 import com.github.pagehelper.PageHelper;
@@ -39,8 +40,8 @@ public class QuestionServiceImpl implements IQuestionService {
 //    @Autowired
 //    private UserSubmitMapper userSubmitMapper;
 
-//    @Autowired
-//    private QuestionCacheManager questionCacheManager;
+    @Autowired
+    private QuestionCacheManager questionCacheManager;
 
     @Override
     public TableDataInfo list(QuestionQueryDTO questionQueryDTO) {
@@ -102,23 +103,32 @@ public class QuestionServiceImpl implements IQuestionService {
         return questionDetailVO;
     }
 
-//    @Override
-//    public String preQuestion(Long questionId) {
-//        Long listSize = questionCacheManager.getListSize();
-//        if (listSize == null || listSize <= 0) {
-//            questionCacheManager.refreshCache();
-//        }
-//        return questionCacheManager.preQuestion(questionId).toString();
-//    }
-//
-//    @Override
-//    public String nextQuestion(Long questionId) {
-//        Long listSize = questionCacheManager.getListSize();
-//        if (listSize == null || listSize <= 0) {
-//            questionCacheManager.refreshCache();
-//        }
-//        return questionCacheManager.nextQuestion(questionId).toString();
-//    }
+    @Override
+    public String preQuestion(Long questionId) {
+        Long listSize = questionCacheManager.getListSize();
+        if (listSize == null || listSize <= 0) {
+            questionCacheManager.refreshCache();
+        }
+        return questionCacheManager.preQuestion(questionId).toString();
+    }
+
+    @Override
+    /**
+     * 获取下一个问题的方法
+     * @param questionId 当前问题的ID，用于获取下一个问题
+     * @return 返回下一个问题的字符串表示
+     */
+    public String nextQuestion(Long questionId) {
+        // 从缓存管理器获取问题列表的大小
+        Long listSize = questionCacheManager.getListSize();
+        // 检查列表是否为空或无效
+        if (listSize == null || listSize <= 0) {
+            // 如果列表为空或无效，刷新缓存
+            questionCacheManager.refreshCache();
+        }
+        // 获取下一个问题并将其转换为字符串返回
+        return questionCacheManager.nextQuestion(questionId).toString();
+    }
 
     private void refreshQuestion() {
         List<Question> questionList = questionMapper.selectList(new LambdaQueryWrapper<Question>());

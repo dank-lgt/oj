@@ -5,6 +5,7 @@ import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.lang.ObjectId;
 import cn.hutool.core.util.StrUtil;
 import com.aliyun.oss.OSSClient;
+import com.aliyun.oss.model.CannedAccessControlList;
 import com.aliyun.oss.model.ObjectMetadata;
 import com.aliyun.oss.model.PutObjectRequest;
 import com.aliyun.oss.model.PutObjectResult;
@@ -16,6 +17,7 @@ import com.example.common.file.config.OSSProperties;
 import com.example.common.file.domain.OSSResult;
 import com.example.common.redis.service.RedisService;
 import com.example.common.security.exception.ServiceException;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -54,7 +56,7 @@ public class OSSService {
 
     // 预签名URL过期时间配置
     @Value("${file.presigned-url.expiration:3600}")
-    private long presignedUrlExpiration; // 默认1小时，单位秒
+    private Long UrlExpiration; // 默认1小时，单位秒
 
     public OSSResult uploadFile(MultipartFile file) {
         return uploadFile(file, null);
@@ -116,11 +118,11 @@ public class OSSService {
 
     private OSSResult upload(String fileType, InputStream inputStream) {
         // 直接使用文件ID作为对象键，不包含路径信息
-        String fileId = ObjectId.next(); // 67f9a1f6e6a84a7a8f5b3c9d
+        String fileId = ObjectId.next(); // 生成文件ID
         String fileExtension = "." + fileType;
-        String key = prop.getPathPrefix()+fileId + fileExtension; // 67f9a1f6e6a84a7a8f5b3c9d.jpg
-
+        String key = prop.getPathPrefix()+fileId + fileExtension; //
         ObjectMetadata objectMetadata = new ObjectMetadata();
+        objectMetadata.setObjectAcl(CannedAccessControlList.PublicRead);
         PutObjectRequest request = new PutObjectRequest(prop.getBucketName(), key, inputStream, objectMetadata);
         PutObjectResult putObjectResult;
 
@@ -139,7 +141,7 @@ public class OSSService {
             ossResult.setSuccess(false);
         } else {
             ossResult.setSuccess(true);
-            ossResult.setName(FileUtil.getName(objectKey));
+            ossResult.setFilename(FileUtil.getName(objectKey));
             ossResult.setFileId(fileId); // 返回文件ID
             ossResult.setUrl(generatePresignedUrl(objectKey));
         }
@@ -159,16 +161,22 @@ public class OSSService {
 
     /**
      * 生成预签名URL - 主要方法
-     * @param objectKey 对象键
+     * @param fileName  文件名
      * @param expiration 过期时间
      * @return 预签名URL
      */
-    public String generatePresignedUrl(String objectKey, Duration expiration) {
+    public String generatePresignedUrl(String fileName, Duration expiration) {
         try {
+            // 如果 fileId 不包含路径前缀，自动添加
+            String key = fileName;
+            if (!key.startsWith(prop.getPathPrefix())) {
+                key = prop.getPathPrefix() + fileName;
+            }
+            // 将Duration转换为Date
             Date expirationDate = new Date(System.currentTimeMillis() + expiration.toMillis());
-            return ossClient.generatePresignedUrl(prop.getBucketName(), objectKey, expirationDate).toString();
+            return ossClient.generatePresignedUrl(prop.getBucketName(), key, expirationDate).toString();
         } catch (Exception e) {
-            log.error("生成预签名URL失败, objectKey: {}, error: {}", objectKey, e.getMessage());
+            log.error("Generate presigned URL error for fileId: {}", fileName, e);
             throw new ServiceException(ResultCode.FAILED_FILE_ACCESS);
         }
     }
@@ -176,8 +184,8 @@ public class OSSService {
     /**
      * 生成预签名URL - 便捷方法（使用默认过期时间）
      */
-    public String generatePresignedUrl(String fileId) {
-        return generatePresignedUrl(fileId, Duration.ofSeconds(presignedUrlExpiration));
+    public String generatePresignedUrl(String fileName) {
+        return generatePresignedUrl(fileName, Duration.ofSeconds(UrlExpiration));
     }
 
     /**

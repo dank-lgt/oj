@@ -25,7 +25,7 @@ public class FileController {
         if (result.isSuccess()) {
             // 返回包含预签名URL的结果
             Map<String, String> data = new HashMap<>();
-            data.put("fileName", result.getName());
+            data.put("fileName", result.getFilename());
             data.put("url", result.getUrl()); // 预签名URL
             data.put("fileId", result.getFileId()); // 文件ID
             return R.ok(data);
