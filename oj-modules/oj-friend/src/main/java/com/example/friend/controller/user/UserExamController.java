@@ -5,6 +5,7 @@ import com.example.commom.core.constans.HttpConstants;
 import com.example.commom.core.controller.BaseController;
 import com.example.commom.core.domain.R;
 import com.example.commom.core.domain.TableDataInfo;
+import com.example.friend.aspect.CheckUserStatus;
 import com.example.friend.domain.exam.dto.ExamDTO;
 import com.example.friend.domain.exam.dto.ExamQueryDTO;
 import com.example.friend.service.user.IUserExamService;
@@ -18,7 +19,7 @@ public class UserExamController extends BaseController {
     @Autowired
     private IUserExamService userExamService;
 
-//   @CheckUserStatus
+    @CheckUserStatus
     @PostMapping("/enter")
     public R<Void> enter(@RequestHeader(HttpConstants.AUTHENTICATION) String token, @RequestBody ExamDTO examDTO) {
         return toR(userExamService.enter(token, examDTO.getExamId()));

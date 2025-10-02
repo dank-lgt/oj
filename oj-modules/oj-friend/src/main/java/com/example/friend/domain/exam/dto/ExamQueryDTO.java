@@ -1,6 +1,7 @@
 package com.example.friend.domain.exam.dto;
 
 import com.example.commom.core.domain.PageQueryDTO;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Getter;
 import lombok.Setter;
 

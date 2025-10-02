@@ -13,6 +13,7 @@ import com.example.friend.domain.question.vo.QuestionVO;
 import com.example.friend.elasticsearch.QuestionRepository;
 import com.example.friend.manager.QuestionCacheManager;
 import com.example.friend.mapper.question.QuestionMapper;
+import com.example.friend.mapper.user.UserSubmitMapper;
 import com.example.friend.service.question.IQuestionService;
 import com.github.pagehelper.PageHelper;
 import com.exapmle.friend.domain.question.es.QuestionES;
@@ -37,8 +38,8 @@ public class QuestionServiceImpl implements IQuestionService {
     @Autowired
     private QuestionMapper questionMapper;
 
-//    @Autowired
-//    private UserSubmitMapper userSubmitMapper;
+    @Autowired
+    private UserSubmitMapper userSubmitMapper;
 
     @Autowired
     private QuestionCacheManager questionCacheManager;
@@ -72,19 +73,19 @@ public class QuestionServiceImpl implements IQuestionService {
         return TableDataInfo.success(questionVOList, total);
     }
 
-//    @Override
-//    public List<QuestionVO> hotList() {
-//        Long total = questionCacheManager.getHostListSize();
-//        List<Long> hotQuestionIdList;
-//        if (total == null || total <= 0) {
-//            PageHelper.startPage(Constants.HOST_QUESTION_LIST_START, Constants.HOST_QUESTION_LIST_END);
-//            hotQuestionIdList = userSubmitMapper.selectHostQuestionList();
-//            questionCacheManager.refreshHotQuestionList(hotQuestionIdList);
-//        } else {
-//            hotQuestionIdList = questionCacheManager.getHostList();
-//        }
-//        return assembleQuestionVOList(hotQuestionIdList);
-//    }
+    @Override
+    public List<QuestionVO> hotList() {
+        Long total = questionCacheManager.getHostListSize();
+        List<Long> hotQuestionIdList;
+        if (total == null || total <= 0) {
+            PageHelper.startPage(Constants.HOST_QUESTION_LIST_START, Constants.HOST_QUESTION_LIST_END);
+            hotQuestionIdList = userSubmitMapper.selectHostQuestionList();
+            questionCacheManager.refreshHotQuestionList(hotQuestionIdList);
+        } else {
+            hotQuestionIdList = questionCacheManager.getHostList();
+        }
+        return assembleQuestionVOList(hotQuestionIdList);
+    }
 
     @Override
     public QuestionDetailVO detail(Long questionId) {

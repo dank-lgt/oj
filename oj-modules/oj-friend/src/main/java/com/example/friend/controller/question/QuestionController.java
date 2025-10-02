@@ -33,10 +33,10 @@ public class QuestionController extends BaseController {
         return null;
     }
 
-//    @GetMapping("/semiLogin/hotList")
-//    public R<List<QuestionVO>> hotList() {
-//        return R.ok(questionService.hotList());
-//    }
+    @GetMapping("/semiLogin/hotList")
+    public R<List<QuestionVO>> hotList() {
+        return R.ok(questionService.hotList());
+    }
 //
     @GetMapping("/detail")
     public R<QuestionDetailVO> detail(Long questionId) {
