@@ -140,17 +140,30 @@ public class QuestionServiceImpl implements IQuestionService {
         questionRepository.saveAll(questionESList);
     }
 
+/**
+ * 将热门问题ID列表转换为问题VO对象列表
+ * @param hotQuestionIdList 热门问题ID列表
+ * @return 转换后的问题VO对象列表，如果输入列表为空则返回空列表
+ */
     private List<QuestionVO> assembleQuestionVOList(List<Long> hotQuestionIdList) {
+    // 检查输入列表是否为空，如果为空直接返回空列表
         if (CollectionUtil.isEmpty(hotQuestionIdList)) {
             return new ArrayList<>();
         }
+    // 创建结果列表
         List<QuestionVO> resultList = new ArrayList<>();
+    // 遍历问题ID列表
         for (Long questionId : hotQuestionIdList) {
+        // 创建问题VO对象
             QuestionVO questionVO = new QuestionVO();
+        // 获取问题详细信息
             QuestionDetailVO detail = detail(questionId);
+        // 设置问题标题
             questionVO.setTitle(detail.getTitle());
+        // 将问题VO添加到结果列表
             resultList.add(questionVO);
         }
+    // 返回结果列表
         return resultList;
     }
 }

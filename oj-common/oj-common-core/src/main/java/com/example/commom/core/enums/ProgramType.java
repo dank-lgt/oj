@@ -5,11 +5,11 @@ import lombok.Getter;
 @Getter
 public enum ProgramType {
 
-    JAVA(0, "java语言"),
+    JAVA(0, "Java语言"),
 
     CPP(1, "C++语言"),
 
-    GOLANG(2, "go语言");
+    GOLANG(2, "Go语言");
 
     private Integer value;
 
