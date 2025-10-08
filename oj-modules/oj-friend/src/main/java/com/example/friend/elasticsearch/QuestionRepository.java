@@ -1,7 +1,7 @@
 package com.example.friend.elasticsearch;
 
 import org.springframework.data.domain.Page;
-import com.exapmle.friend.domain.question.es.QuestionES;
+import com.example.friend.domain.question.es.QuestionES;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.annotations.Query;
 import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;

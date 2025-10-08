@@ -9,7 +9,11 @@ spring:
       discovery:
         namespace: 7fc8d7ca-2230-497c-8d69-f5f0330b75e7
         server-addr: http://localhost:8848
+        username: nacos
+        password: nacos
       config:
         namespace: 7fc8d7ca-2230-497c-8d69-f5f0330b75e7
         server-addr: http://localhost:8848
         file-extension: yaml
+        username: nacos
+        password: nacos

@@ -41,14 +41,14 @@ public class JudgeServiceImpl implements IJudgeService {
         if (judgeSubmitDTO == null) {
             throw new IllegalArgumentException("参数不能为空");
         }
-        
+
         log.info("---- 判题逻辑开始 -------");
         UserQuestionResultVO userQuestionResultVO = new UserQuestionResultVO();
         SandBoxExecuteResult sandBoxExecuteResult = null;
         try {
             sandBoxExecuteResult =
                     sandboxPoolService.exeJavaCode(judgeSubmitDTO.getUserId(), judgeSubmitDTO.getUserCode(), judgeSubmitDTO.getInputList());
-            
+
             if (sandBoxExecuteResult != null && CodeRunStatus.SUCCEED.equals(sandBoxExecuteResult.getRunStatus())) {
                 //比对直接结果  时间限制  空间限制的比对
                 userQuestionResultVO = doJudge(judgeSubmitDTO, sandBoxExecuteResult, userQuestionResultVO);
@@ -78,6 +78,14 @@ public class JudgeServiceImpl implements IJudgeService {
         return userQuestionResultVO;
     }
 
+    /**
+     * 执行代码并判断结果
+     *
+     * @param judgeSubmitDTO       提交的判题数据传输对象
+     * @param sandBoxExecuteResult 沙箱执行结果
+     * @param userQuestionResultVO 用户题目结果视图对象
+     * @return 返回处理后的用户题目结果视图对象
+     */
     private UserQuestionResultVO doJudge(JudgeSubmitDTO judgeSubmitDTO,
                                          SandBoxExecuteResult sandBoxExecuteResult,
                                          UserQuestionResultVO userQuestionResultVO) {
@@ -85,10 +93,10 @@ public class JudgeServiceImpl implements IJudgeService {
         if (judgeSubmitDTO == null || sandBoxExecuteResult == null || userQuestionResultVO == null) {
             throw new IllegalArgumentException("参数不能为空");
         }
-        
+
         List<String> exeOutputList = sandBoxExecuteResult.getOutputList();
         List<String> outputList = judgeSubmitDTO.getOutputList();
-        
+
         // 添加空值检查
         if (outputList == null || exeOutputList == null) {
             userQuestionResultVO.setScore(JudgeConstants.ERROR_SCORE);
@@ -96,7 +104,7 @@ public class JudgeServiceImpl implements IJudgeService {
             userQuestionResultVO.setExeMessage(CodeRunStatus.NOT_ALL_PASSED.getMsg());
             return userQuestionResultVO;
         }
-        
+
         if (outputList.size() != exeOutputList.size()) {
             userQuestionResultVO.setScore(JudgeConstants.ERROR_SCORE);
             userQuestionResultVO.setPass(Constants.FALSE);
@@ -108,30 +116,45 @@ public class JudgeServiceImpl implements IJudgeService {
         return assembleUserQuestionResultVO(judgeSubmitDTO, sandBoxExecuteResult, userQuestionResultVO, userExeResultList, passed);
     }
 
+    /**
+     * 组装用户答题结果视图对象的方法
+     *
+     * @param judgeSubmitDTO       判题提交数据传输对象
+     * @param sandBoxExecuteResult 沙箱执行结果
+     * @param userQuestionResultVO 用户答题结果视图对象
+     * @param userExeResultList    用户执行结果列表
+     * @param passed               是否全部通过测试
+     * @return 组装后的用户答题结果视图对象
+     */
     private UserQuestionResultVO assembleUserQuestionResultVO(JudgeSubmitDTO judgeSubmitDTO,
                                                               SandBoxExecuteResult sandBoxExecuteResult,
                                                               UserQuestionResultVO userQuestionResultVO,
                                                               List<UserExeResult> userExeResultList, boolean passed) {
+        // 设置用户执行结果列表
         userQuestionResultVO.setUserExeResultList(userExeResultList);
+        // 如果未通过所有测试，设置失败状态并返回
         if (!passed) {
             return setResultVOFailure(userQuestionResultVO, CodeRunStatus.NOT_ALL_PASSED.getMsg());
         }
-        
+
         // 将资源检查前置，使逻辑更清晰
+        // 检查内存使用是否超出限制
         if (sandBoxExecuteResult.getUseMemory() > judgeSubmitDTO.getSpaceLimit()) {
             return setResultVOFailure(userQuestionResultVO, CodeRunStatus.OUT_OF_MEMORY.getMsg());
         }
-        
+
+        // 检查运行时间是否超出限制
         if (sandBoxExecuteResult.getUseTime() > judgeSubmitDTO.getTimeLimit()) {
             return setResultVOFailure(userQuestionResultVO, CodeRunStatus.OUT_OF_TIME.getMsg());
+    // 设置通过状态和得分
         }
-        
+
         userQuestionResultVO.setPass(Constants.TRUE);
         int score = judgeSubmitDTO.getDifficulty() * JudgeConstants.DEFAULT_SCORE;
         userQuestionResultVO.setScore(score);
         return userQuestionResultVO;
     }
-    
+
     /**
      * 设置结果VO为失败状态的通用方法
      */

@@ -16,7 +16,7 @@ import com.example.friend.mapper.question.QuestionMapper;
 import com.example.friend.mapper.user.UserSubmitMapper;
 import com.example.friend.service.question.IQuestionService;
 import com.github.pagehelper.PageHelper;
-import com.exapmle.friend.domain.question.es.QuestionES;
+import com.example.friend.domain.question.es.QuestionES;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;

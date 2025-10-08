@@ -1,4 +1,4 @@
-package com.exapmle.friend.domain.question.es;
+package com.example.friend.domain.question.es;
 
 import lombok.Getter;
 import lombok.Setter;

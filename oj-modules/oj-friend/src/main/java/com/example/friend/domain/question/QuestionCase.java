@@ -6,8 +6,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class QuestionCase {
-
     private String input;
-
     private String output;
 }

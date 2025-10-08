@@ -26,32 +26,42 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * 沙箱池服务实现类，提供代码执行环境的管理和代码执行功能
+ */
 @Service
 @Slf4j
 public class SandboxPoolServiceImpl implements ISandboxPoolService {
 
     @Autowired
-    private DockerSandBoxPool sandBoxPool;
+    private DockerSandBoxPool sandBoxPool; // Docker沙箱池，用于管理Docker容器
 
     @Autowired
-    private DockerClient dockerClient;
+    private DockerClient dockerClient; // Docker客户端，用于与Docker容器交互
 
-    private String containerId;
+    private String containerId; // 当前使用的容器ID
 
-    private String userCodeFileName;
+    private String userCodeFileName; // 用户代码文件名
 
     @Value("${sandbox.limit.time:5}")
-    private Long timeLimit;
+    private Long timeLimit; // 代码执行时间限制，默认为5秒
 
+    /**
+     * 执行Java代码的主方法
+     * @param userId 用户ID
+     * @param userCode 用户提交的Java代码
+     * @param inputList 输入用例列表
+     * @return 执行结果对象，包含编译状态、执行状态、输出结果等信息
+     */
     @Override
     public SandBoxExecuteResult exeJavaCode(Long userId, String userCode, List<String> inputList) {
-        containerId = sandBoxPool.getContainer();
-        createUserCodeFile(userCode);
+        containerId = sandBoxPool.getContainer(); // 从沙箱池获取一个容器
+        createUserCodeFile(userCode); // 创建用户代码文件
         //编译代码
         CompileResult compileResult = compileCodeByDocker();
         if (!compileResult.isCompiled()) {
-            sandBoxPool.returnContainer(containerId);
-            deleteUserCodeFile();
+            sandBoxPool.returnContainer(containerId); // 归还容器
+            deleteUserCodeFile(); // 删除用户代码文件
             return SandBoxExecuteResult.fail(CodeRunStatus.COMPILE_FAILED, compileResult.getExeMessage());
         }
         //执行代码
