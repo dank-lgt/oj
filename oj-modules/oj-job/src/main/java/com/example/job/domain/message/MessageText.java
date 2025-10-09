@@ -1,6 +1,7 @@
 package com.example.job.domain.message;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.example.commom.core.domain.BaseEntity;
@@ -18,4 +19,7 @@ public class MessageText extends BaseEntity {
     private String messageTitle;
 
     private String messageContent;
+
+//    @TableField(exist = false)
+//    private Long  recId;
 }
