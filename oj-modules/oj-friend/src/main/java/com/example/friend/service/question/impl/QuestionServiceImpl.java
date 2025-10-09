@@ -47,14 +47,15 @@ public class QuestionServiceImpl implements IQuestionService {
     @Override
     public TableDataInfo list(QuestionQueryDTO questionQueryDTO) {
         long count = questionRepository.count();
-        if (count <= 0) {
+        long totalCount = questionMapper.selectCount(new LambdaQueryWrapper<>());
+        if (count < totalCount / 2) {
             refreshQuestion();
         }
         Sort sort = Sort.by(Sort.Direction.DESC, "createTime");
         Pageable pageable = PageRequest.of(questionQueryDTO.getPageNum() - 1, questionQueryDTO.getPageSize(), sort);
         Integer difficulty = questionQueryDTO.getDifficulty();
         String keyword = questionQueryDTO.getKeyword();
-        Page< QuestionES> questionESPage;
+        Page<QuestionES> questionESPage;
         if (difficulty == null && StrUtil.isEmpty(keyword)) {
             questionESPage = questionRepository.findAll(pageable);
         } else if (StrUtil.isEmpty(keyword)) {
@@ -131,39 +132,48 @@ public class QuestionServiceImpl implements IQuestionService {
         return questionCacheManager.nextQuestion(questionId).toString();
     }
 
+    /**
+     * 刷新问题数据到Elasticsearch的方法
+     * 从数据库中查询所有问题，然后同步到Elasticsearch中
+     */
     private void refreshQuestion() {
+        // 从数据库中查询所有问题
         List<Question> questionList = questionMapper.selectList(new LambdaQueryWrapper<Question>());
+        // 如果查询结果为空，则直接返回
         if (CollectionUtil.isEmpty(questionList)) {
             return;
         }
+        // 将数据库实体列表转换为Elasticsearch实体列表
         List<QuestionES> questionESList = BeanUtil.copyToList(questionList, QuestionES.class);
+        // 将所有问题数据保存到Elasticsearch中
         questionRepository.saveAll(questionESList);
     }
 
-/**
- * 将热门问题ID列表转换为问题VO对象列表
- * @param hotQuestionIdList 热门问题ID列表
- * @return 转换后的问题VO对象列表，如果输入列表为空则返回空列表
- */
+    /**
+     * 将热门问题ID列表转换为问题VO对象列表
+     *
+     * @param hotQuestionIdList 热门问题ID列表
+     * @return 转换后的问题VO对象列表，如果输入列表为空则返回空列表
+     */
     private List<QuestionVO> assembleQuestionVOList(List<Long> hotQuestionIdList) {
-    // 检查输入列表是否为空，如果为空直接返回空列表
+        // 检查输入列表是否为空，如果为空直接返回空列表
         if (CollectionUtil.isEmpty(hotQuestionIdList)) {
             return new ArrayList<>();
         }
-    // 创建结果列表
+        // 创建结果列表
         List<QuestionVO> resultList = new ArrayList<>();
-    // 遍历问题ID列表
+        // 遍历问题ID列表
         for (Long questionId : hotQuestionIdList) {
-        // 创建问题VO对象
+            // 创建问题VO对象
             QuestionVO questionVO = new QuestionVO();
-        // 获取问题详细信息
+            // 获取问题详细信息
             QuestionDetailVO detail = detail(questionId);
-        // 设置问题标题
+            // 设置问题标题
             questionVO.setTitle(detail.getTitle());
-        // 将问题VO添加到结果列表
+            // 将问题VO添加到结果列表
             resultList.add(questionVO);
         }
-    // 返回结果列表
+        // 返回结果列表
         return resultList;
     }
 }
