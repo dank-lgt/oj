@@ -5,7 +5,7 @@ services:
     image: bit/oj-gateway:0.0.1-SNAPSHOT
     # 提供了构建上下文的路径。这意味着Docker将在./bitoj-jar/gateway/目录中寻找构建所需的文件。
     build:
-      context: ./bitoj-jar/gateway/
+      context: Web-oj-jar/gateway/
     container_name: oj-gateway
     environment:
       # 时区上海
@@ -18,7 +18,7 @@ services:
   oj-system:
     image: bit/oj-system:0.0.1-SNAPSHOT
     build:
-      context: ./bitoj-jar/system/
+      context: Web-oj-jar/system/
     container_name: oj-system
     environment:
       # 时区上海
@@ -31,7 +31,7 @@ services:
   oj-friend:
     image: bit/oj-friend:0.0.1-SNAPSHOT
     build:
-      context: ./bitoj-jar/friend/
+      context: Web-oj-jar/friend/
     container_name: oj-friend
     environment:
       # 时区上海
@@ -44,7 +44,7 @@ services:
   oj-job:
     image: bit/oj-job:0.0.1-SNAPSHOT
     build:
-      context: ./bitoj-jar/job/
+      context: Web-oj-jar/job/
     container_name: oj-job
     environment:
       # 时区上海
@@ -57,7 +57,7 @@ services:
   oj-judge:
     image: bit/oj-judge:0.0.1-SNAPSHOT
     build:
-      context: ./bitoj-jar/judge/
+      context: Web-oj-jar/judge/
     container_name: oj-judge
     # 将本地目录挂载到容器内的用户代码存储目录
     volumes:
